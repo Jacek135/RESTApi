@@ -5,7 +5,12 @@ import org.koushik.javabrains.messenger.resources.beans.MessageFilterBean;
 import org.koushik.javabrains.messenger.service.MessageService;
 
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 /**
@@ -30,8 +35,15 @@ public class MessageResource {
     }
 
     @POST
-    public Message addMessage(Message message){
-        return messageService.addMessage(message);
+    public Response addMessage(Message message, @Context UriInfo uriInfo) throws URISyntaxException {
+        //System.out.print(uriInfo.getAbsolutePath());
+        Message newMessage = messageService.addMessage(message);
+        String newId = String.valueOf(newMessage.getId());
+        URI uri = uriInfo.getAbsolutePathBuilder().path(newId).build();
+        //return Response.status(Response.Status.CREATED).entity(newMessage).build();
+        //return Response.created(new URI("/messenger/webapi/messages/" + newMessage.getId())).entity(newMessage).build();
+        return Response.created(uri).entity(newMessage).build();
+        //return messageService.addMessage(message);
     }
 
     @PUT
@@ -50,7 +62,7 @@ public class MessageResource {
     @GET
     @Path("/{messageId}")
     public Message getMessage(@PathParam("messageId") long messageId){
-         return messageService.getMessage(messageId);
+        return messageService.getMessage(messageId);
     }
 
     @Path("{messageId}/comments")
